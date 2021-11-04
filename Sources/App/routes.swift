@@ -1,11 +1,16 @@
 import Vapor
+import Queues
 
-func routes(_ app: Application) throws {
-    app.get { req in
-        return "It works!"
+func routes(_ app: Application, requestController: RequestController) throws {
+    app.get { req -> String in
+        requestController.requestHandled(ipAddress: req.remoteAddress?.ipAddress)
+ 
+        return "Home page"
     }
 
-    app.get("hello") { req -> String in
-        return "Hello, world!"
+    app.get("top100") { req -> [String: String] in
+        requestController.requestHandled(ipAddress: req.remoteAddress?.ipAddress)
+        
+        return requestController.top100()
     }
 }

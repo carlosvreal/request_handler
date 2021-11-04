@@ -1,10 +1,16 @@
 import Vapor
+import Queues
 
-// configures your application
 public func configure(_ app: Application) throws {
-    // uncomment to serve files from /Public folder
-    // app.middleware.use(FileMiddleware(publicDirectory: app.directory.publicDirectory))
+    let requestController = RequestController()
 
+    // Register scheduler to clean up cache every day
+    app.queues.schedule(CleanupJob(request: requestController))
+        .daily()
+        .at(.midnight)
+    
+    try app.queues.startScheduledJobs()
+    
     // register routes
-    try routes(app)
+    try routes(app, requestController: requestController)
 }

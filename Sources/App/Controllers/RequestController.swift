@@ -1,5 +1,5 @@
 //
-//  File.swift
+//  RequestController.swift
 //
 //
 //  Created by Carlos Real on 03/11/21.
@@ -20,15 +20,14 @@ import Foundation
  * clear()
  Called at the start of each day to forget about all IP addresses and tallies.
  
+ ////
  What would you do differently if you had more time?
- 
  What is the runtime complexity of each function?
  How does your code work?
  What other approaches did you decide not to pursue?
  How would you test this?
  
  */
-///
 
 final class RequestController {
     
@@ -38,14 +37,10 @@ final class RequestController {
     // Keeps a sorted list of top N items
     private var topRankedList = [[String: Int]]()
     
-    /**
-     Registers IP access incrementing view access counter.
-     Using a hashtable [ipTrackerList] to keep tracking in-memory
-     
-     */
-    func requestHandler(ipAddress: String) {
-        
-        // TODO: needs to extract ip address
+    //  Registers IP access incrementing view access counter.
+    //  Using a hashtable [ipTrackerList] to keep tracking in-memory
+    func requestHandled(ipAddress: String?) {
+        guard let ipAddress = ipAddress else { return }
         
         // Adds ip to general counter hashtable
         if ipTrackerList[ipAddress] != nil {
@@ -65,36 +60,36 @@ final class RequestController {
             }
             
             topRankedList = sorteList(list: topRankedList, validation: { lhs, rhs in
-                guard let lhsValue = lhs.first?.value, let rhsValue = rhs.first?.value else {
-                    return false }
+                guard let lhsValue = lhs.first?.value, let rhsValue = rhs.first?.value else { return false }
                 return lhsValue > rhsValue
             })
         }
+        
+        print(topRankedList)
     }
     
     func top100() -> [String: String] {
+        let emptyResponse = "[]"
         guard !ipTrackerList.isEmpty else {
-            return ["result": "[]"] // TODO: temp
+            return ["result": emptyResponse]
         }
         
+        let topList = Array(topRankedList.prefix(100))
         
-        
-        //        let topList:
-        //        let encoder = JSONEncoder()
-        //        if let response = try? encoder.encode(ipTrackerList) {
-        //
-        //        }
-        
-        //        guard ipTrackerList.count > 100 else {
-        //            let response = encoder.encode(ipTrackerList)
-        //
-        //            return ipTrackerList
-        //                .map { "ip: \($0.key) views: \($0!.value)" }
-        //        }
-        
-        return [:] //ipTrackerList[1...100]
+        do {
+            let data = try JSONEncoder().encode(topList)
+            let response = String(data: data, encoding: .utf8) ?? emptyResponse
+            
+            return ["result": response]
+        } catch {
+            return ["result": emptyResponse]
+        }
     }
     
+    func clear() {
+        ipTrackerList.removeAll()
+        topRankedList.removeAll()
+    }
 }
 
 // MARK: - Private methods
