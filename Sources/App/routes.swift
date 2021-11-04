@@ -11,7 +11,6 @@ func routes(_ app: Application, requestController: RequestControllerProtocol) th
     app.get("top100") { req -> String in
         requestController.requestHandled(ipAddress: req.remoteAddress?.ipAddress)
         
-        
         do {
             let list = requestController.top100()
             let data = try JSONSerialization.data(withJSONObject: list, options: .prettyPrinted)

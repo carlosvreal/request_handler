@@ -38,20 +38,19 @@ public final class RequestController: RequestControllerProtocol {
         }
         
         // Keeps the [topRankedList] sorted which will decrease complexity at the request of top 100
-        if let value = ipTrackerList[ipAddress] {
+        guard let value = ipTrackerList[ipAddress] else { return }
             
-            // overrides the value in case is in the list, ortherwise just adds it.
-            if let index = topRankedList.firstIndex(where: { $0.first?.key == ipAddress}) {
-                topRankedList[index] = [ipAddress: value]
-            } else {
-                topRankedList.append([ipAddress: value])
-            }
-            
-            topRankedList = sorteList(list: topRankedList, validation: { lhs, rhs in
-                guard let lhsValue = lhs.first?.value, let rhsValue = rhs.first?.value else { return false }
-                return lhsValue > rhsValue
-            })
+        // overrides the value in case is in the list, ortherwise just adds it at the same place.
+        if let index = topRankedList.firstIndex(where: { $0.first?.key == ipAddress}) {
+            topRankedList[index] = [ipAddress: value]
+        } else {
+            topRankedList.append([ipAddress: value])
         }
+        
+        topRankedList = sorteList(list: topRankedList, validation: { lhs, rhs in
+            guard let lhsValue = lhs.first?.value, let rhsValue = rhs.first?.value else { return false }
+            return lhsValue > rhsValue
+        })
     }
     
     public func top100() -> [String: [[String: Int]]] {
