@@ -11,7 +11,7 @@ import Queues
 // Wrapper to clean up ip addressses list
 struct CleanupJob: ScheduledJob {
     
-    let request: RequestController
+    let request: RequestControllerProtocol
     
     func run(context: QueueContext) -> EventLoopFuture<Void> {
         // clear cached content

@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import Network
 
 ///
 /**
@@ -29,7 +30,13 @@ import Foundation
  
  */
 
-final class RequestController {
+public protocol RequestControllerProtocol {
+    func requestHandled(ipAddress: String?)
+    func top100() -> [String: [[String: Int]]]
+    func clear()
+}
+
+public final class RequestController: RequestControllerProtocol {
     
     // Using dictionary to have O(1) to access time
     private var ipTrackerList = [String: Int]()
@@ -37,10 +44,13 @@ final class RequestController {
     // Keeps a sorted list of top N items
     private var topRankedList = [[String: Int]]()
     
+    // MARK: Init
+    public init() {}
+    
     //  Registers IP access incrementing view access counter.
     //  Using a hashtable [ipTrackerList] to keep tracking in-memory
-    func requestHandled(ipAddress: String?) {
-        guard let ipAddress = ipAddress else { return }
+    public func requestHandled(ipAddress: String?) {
+        guard let ipAddress = ipAddress, isAddressValid(ipAddress) else { return }
         
         // Adds ip to general counter hashtable
         if ipTrackerList[ipAddress] != nil {
@@ -64,29 +74,15 @@ final class RequestController {
                 return lhsValue > rhsValue
             })
         }
-        
-        print(topRankedList)
     }
     
-    func top100() -> [String: String] {
-        let emptyResponse = "[]"
-        guard !ipTrackerList.isEmpty else {
-            return ["result": emptyResponse]
-        }
-        
+    public func top100() -> [String: [[String: Int]]] {
+        // Get first 100 top ranked
         let topList = Array(topRankedList.prefix(100))
-        
-        do {
-            let data = try JSONEncoder().encode(topList)
-            let response = String(data: data, encoding: .utf8) ?? emptyResponse
-            
-            return ["result": response]
-        } catch {
-            return ["result": emptyResponse]
-        }
+        return ["result": topList]
     }
     
-    func clear() {
+    public func clear() {
         ipTrackerList.removeAll()
         topRankedList.removeAll()
     }
@@ -94,6 +90,15 @@ final class RequestController {
 
 // MARK: - Private methods
 private extension RequestController {
+    // Validate ip address using language helpers
+    func isAddressValid(_ address: String) -> Bool {
+        if let _ = IPv4Address(address) {
+            return true
+        } else if let _ = IPv6Address(address) {
+            return true
+        }
+        return false
+    }
     
     // Insertion sort - O(n^2)
     // Since the array is being sorted gradually I believe it attends the requirements for small size, 100 in this case
